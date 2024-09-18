@@ -5,7 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BarangResource\Pages;
 use App\Filament\Resources\BarangResource\RelationManagers;
 use App\Models\Barang;
+use App\Models\Pelanggan;
 use App\Models\Pembelian;
+use Barryvdh\DomPDF\Facade\Pdf;
+use DragonCode\Contracts\Cashier\Resources\Model;
 use Filament\Tables\Actions\EditAction;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,6 +22,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Blade;
+
 
 class BarangResource extends Resource
 {
@@ -65,6 +70,18 @@ class BarangResource extends Resource
             ])
             ->actions([
                 EditAction::make(),
+
+                Tables\Actions\Action::make('pdf')
+                    ->label('PDF')
+                    ->color('success')
+                    ->icon('heroicon-o-face-smile')
+                    ->action(function (Barang $record) { 
+                        $pdf = PDF::loadView('barang', ['record' => $record]); 
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->stream();
+                        }, $record->kode . '.pdf');
+                    }),
+                
             ])
             ->bulkActions([
                 BulkActionGroup::make([

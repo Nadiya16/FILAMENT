@@ -6,6 +6,7 @@ use App\Filament\Resources\PembelianItemResource\Pages;
 use App\Filament\Resources\PembelianItemResource\RelationManagers;
 use App\Models\Pembelian;
 use App\Models\PembelianItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Form;
@@ -17,6 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Blade;
 
 class PembelianItemResource extends Resource
 {
@@ -112,6 +114,16 @@ class PembelianItemResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('pdf')
+                ->label('PDF')
+                ->color('success')
+                ->icon('heroicon-o-rectangle-stack')
+                ->action(function (PembelianItem $record) { 
+                    $pdf = PDF::loadView('item', ['record' => $record]); 
+                    return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->stream();
+                    }, $record->barang_id . '.pdf');
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

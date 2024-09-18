@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SupplierResource\Pages;
 use App\Filament\Resources\SupplierResource\RelationManagers;
 use App\Models\Supplier;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -58,6 +59,16 @@ class SupplierResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('pdf')
+                ->label('PDF')
+                ->color('success')
+                ->icon('heroicon-o-rectangle-stack')
+                ->action(function (Supplier $record) { 
+                    $pdf = PDF::loadView('supplier', ['record' => $record]); 
+                    return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->stream();
+                    }, $record->nama . '.pdf');
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

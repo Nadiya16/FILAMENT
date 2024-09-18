@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PembelianResource\Pages;
 use App\Filament\Resources\PembelianResource\RelationManagers;
 use App\Models\Pembelian;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DragonCode\Support\Facades\Helpers\Arr;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -17,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Set;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Blade;
 use PhpParser\Builder\Function_;
 
 class PembelianResource extends Resource
@@ -72,6 +74,18 @@ class PembelianResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+
+                Tables\Actions\Action::make('pdf')
+                    ->label('PDF')
+                    ->color('success')
+                    ->icon('heroicon-o-rectangle-stack')
+                    ->action(function (Pembelian $record) { 
+                
+                $pdf = PDF::loadView('pembelian', ['record' => $record]); 
+                return response()->streamDownload(function () use ($pdf) {
+                    echo $pdf->stream();
+                }, $record->supplier_id . '.pdf');
+                })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
